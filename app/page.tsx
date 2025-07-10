@@ -112,7 +112,6 @@ export default function Home() {
                   />
                   <Button
                     type="button"
-                    className="cursor-pointer"
                     disabled={
                       !question.trim() || queryDocumentMutation.isPending
                     }
@@ -138,12 +137,7 @@ export default function Home() {
                 <h2 className="text-lg font-semibold text-gray-900">
                   AI Response
                 </h2>
-                <Button
-                  className="cursor-pointer"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReset}
-                >
+                <Button variant="outline" size="sm" onClick={handleReset}>
                   Ask Another
                 </Button>
               </CardHeader>
