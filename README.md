@@ -41,8 +41,8 @@ Create a `.env.local` file in the root directory:
 
 ```env
 # Cloudflare Workers URLs
-NEXT_PUBLIC_DOCUMENT_PROCESSOR_URL=https://document-processor-worker.your-subdomain.workers.dev
-NEXT_PUBLIC_RAG_QUERY_URL=https://rag-query-worker.your-subdomain.workers.dev
+NEXT_PUBLIC_DOCUMENT_PROCESSOR_URL=
+NEXT_PUBLIC_RAG_QUERY_URL=
 ```
 
 ### Installation
