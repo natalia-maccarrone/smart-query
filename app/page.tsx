@@ -101,7 +101,7 @@ export default function Home() {
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="What would you like to know about your text?"
-                    disabled={queryDocumentMutation.isPending && !!aiResponse}
+                    disabled={queryDocumentMutation.isPending || !!aiResponse}
                     className="flex-1"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
