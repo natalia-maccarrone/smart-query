@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart Query
 
-## Getting Started
+A Next.js application that lets you upload text documents and then ask questions about them. The AI reads your document and provides intelligent answers based on the content you submitted.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Document Processing**: Submit text documents (up to 500 characters) for intelligent analysis
+- **AI-Powered Q&A**: Ask questions about your documents and get contextual answers
+
+## Architecture
+
+The application consists of a Next.js frontend connected to three Cloudflare Workers:
+
+1. **Document Processor Worker**: Chunks documents and generates embeddings
+2. **Embeddings Worker**: Converts text to vector embeddings using Hugging Face
+3. **RAG Query Worker**: Performs similarity search and generates AI responses using Llama 3.1
+
+```
+User Input → Document Processing → Vector Storage → Question → Similarity Search → AI Response
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technologies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **State Management**: React Query (@tanstack/react-query)
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Backend**: Cloudflare Workers
+- **Database**: Supabase with pgvector
+- **AI Models**: Hugging Face (embeddings + Llama 3.1-8B-Instruct)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 18+
+- Deployed Cloudflare Workers (document-processor-worker, embeddings-worker, rag-query-worker)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create a `.env.local` file in the root directory:
 
-## Deploy on Vercel
+```env
+# Cloudflare Workers URLs
+NEXT_PUBLIC_DOCUMENT_PROCESSOR_URL=https://document-processor-worker.your-subdomain.workers.dev
+NEXT_PUBLIC_RAG_QUERY_URL=https://rag-query-worker.your-subdomain.workers.dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
