@@ -37,7 +37,7 @@ User Input → Document Processing → Vector Storage → Question → Similarit
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory:
+Create a `.env` file in the root directory:
 
 ```env
 # Cloudflare Workers URLs
