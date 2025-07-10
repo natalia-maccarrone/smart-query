@@ -1,66 +1,59 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Brain, ArrowLeft, Send } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Brain, ArrowLeft, Send } from "lucide-react";
+import { useProcessDocument, useQueryDocument } from "@/lib/hooks";
 
 export default function Home() {
-  const [text, setText] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submittedText, setSubmittedText] = useState("")
-  const [currentView, setCurrentView] = useState<"form" | "chat">("form")
+  const [text, setText] = useState("");
+  const [currentView, setCurrentView] = useState<"form" | "chat">("form");
+  const [documentId, setDocumentId] = useState<string | null>(null);
+  const [question, setQuestion] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
 
-  // Chat state
-  const [question, setQuestion] = useState("")
-  const [isAsking, setIsAsking] = useState(false)
-  const [aiResponse, setAiResponse] = useState("")
+  const processDocumentMutation = useProcessDocument((data) => {
+    if (data) {
+      setDocumentId(data.document_id);
+    }
+    setCurrentView("chat");
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!text.trim()) return
+  const queryDocumentMutation = useQueryDocument((data) => {
+    if (data) {
+      setAiResponse(data.answer.content);
+    }
+  });
 
-    setIsSubmitting(true)
+  const handleSubmit = async () => {
+    if (!text.trim()) return;
 
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    processDocumentMutation.mutate(text);
+  };
 
-    setSubmittedText(text)
-    setCurrentView("chat")
-    setIsSubmitting(false)
-  }
+  const handleAskQuestion = async () => {
+    if (!question.trim() || !documentId) return;
 
-  const handleAskQuestion = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!question.trim()) return
-
-    setIsAsking(true)
-
-    // Simulate AI response
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    setAiResponse(
-      `Based on your text, here's my response to "${question}": This is a simulated AI response that will be replaced with your actual AI integration using React Query.`,
-    )
-    setIsAsking(false)
-  }
+    queryDocumentMutation.mutate({ question, document_id: documentId });
+  };
 
   const handleReset = () => {
-    setQuestion("")
-    setAiResponse("")
-  }
+    setQuestion("");
+    setAiResponse("");
+  };
 
   const handleBackToForm = () => {
-    setText("")
-    setSubmittedText("")
-    setCurrentView("form")
-    setQuestion("")
-    setAiResponse("")
-  }
+    setText("");
+    setCurrentView("form");
+    setQuestion("");
+    setAiResponse("");
+    setDocumentId(null);
+  };
 
   if (currentView === "chat") {
     return (
@@ -68,7 +61,11 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={handleBackToForm} className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={handleBackToForm}
+              className="flex items-center gap-2"
+            >
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
@@ -85,7 +82,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="bg-gray-50 p-4 rounded-lg max-h-32 overflow-y-auto">
-                <p className="text-sm text-gray-700">{submittedText}</p>
+                <p className="text-sm text-gray-700">{text}</p>
               </div>
             </CardContent>
           </Card>
@@ -93,24 +90,39 @@ export default function Home() {
           {/* Question Input */}
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold text-gray-900">Ask a Question</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Ask a Question
+              </h2>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAskQuestion} className="space-y-4">
+              <form className="space-y-4">
                 <div className="flex gap-2">
                   <Input
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="What would you like to know about your text?"
-                    disabled={isAsking}
+                    disabled={queryDocumentMutation.isPending && !!aiResponse}
                     className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAskQuestion();
+                      }
+                    }}
                   />
-                  <Button type="submit" disabled={!question.trim() || isAsking}>
-                    {isAsking ? (
+                  <Button
+                    type="button"
+                    className="cursor-pointer"
+                    disabled={
+                      !question.trim() || queryDocumentMutation.isPending
+                    }
+                    onClick={handleAskQuestion}
+                  >
+                    {queryDocumentMutation.isPending ? (
                       "Asking..."
                     ) : (
                       <>
-                        <Send className="h-4 w-4" />
+                        <Send className="h-4 w-4 " />
                       </>
                     )}
                   </Button>
@@ -123,7 +135,9 @@ export default function Home() {
           {aiResponse && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">AI Response</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  AI Response
+                </h2>
                 <Button variant="outline" size="sm" onClick={handleReset}>
                   Ask Another
                 </Button>
@@ -137,7 +151,7 @@ export default function Home() {
           )}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -148,25 +162,43 @@ export default function Home() {
             <Brain className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-gray-900">Smart Query</h1>
           </div>
-          <p className="text-gray-600">Enter your text below and submit for processing</p>
+          <p className="text-gray-600">
+            Enter your text below and then ask questions about it. Get instant
+            answers and insights from your documents.
+          </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4">
             <div>
               <Textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Enter your text here..."
                 className="min-h-[200px] resize-none"
-                disabled={isSubmitting}
+                disabled={processDocumentMutation.isPending}
+                maxLength={500}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && e.ctrlKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
               />
+              <div className="text-right text-sm text-gray-500 mt-1">
+                {text.length}/500 characters
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={!text.trim() || isSubmitting}>
-              {isSubmitting ? "Processing..." : "Submit"}
+            <Button
+              type="button"
+              className="w-full"
+              disabled={!text.trim() || processDocumentMutation.isPending}
+              onClick={handleSubmit}
+            >
+              {processDocumentMutation.isPending ? "Processing..." : "Submit"}
             </Button>
           </form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
