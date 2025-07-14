@@ -175,7 +175,7 @@ export default function Home() {
                 placeholder="Enter your text here..."
                 className="min-h-[200px] resize-none"
                 disabled={processDocumentMutation.isPending}
-                maxLength={500}
+                maxLength={1000}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) {
                     e.preventDefault();
@@ -184,7 +184,7 @@ export default function Home() {
                 }}
               />
               <div className="text-right text-sm text-gray-500 mt-1">
-                {text.length}/500 characters
+                {text.length}/1000 characters
               </div>
             </div>
             <Button
